@@ -3,36 +3,35 @@ from rest_framework import serializers
 from typing import List, Dict, Callable, Tuple
 
 from rest_framework.fields import empty
+
 SlotValidationResult = Tuple[bool, bool, str, Dict]
 
 
-class valueFormSerializer(serializers.Serializer):
+class ValueFormSerializer(serializers.Serializer):
     entity_type = serializers.CharField(required=True)
     value = serializers.CharField(required=True)
 
-class finiteSerializer(serializers.Serializer):
+class FiniteSerializer(serializers.Serializer):
                                 
-    invalid_trigger = serializers.CharField(required=True)
-    key = serializers.CharField(required=True)
-    name = serializers.CharField(required=True)
-    reuse = serializers.BooleanField(required=True)
-    support_multiple = serializers.BooleanField(required=True) 
-    pick_first = serializers.BooleanField(required=True)
-    supported_values = serializers.ListField(required=True)
-    type = serializers.ListField(required=True)
+    invalid_trigger = serializers.CharField()
+    key = serializers.CharField()
+    name = serializers.CharField()
+    reuse = serializers.BooleanField(default=False)
+    support_multiple = serializers.BooleanField(default=True) 
+    pick_first = serializers.BooleanField(default=False)
+    supported_values = serializers.ListField()
+    type = serializers.ListField()
     validation_parser = serializers.CharField()
-    values = serializers.ListField(child = valueFormSerializer())   
-    filled = serializers.BooleanField(read_only=True)
-    partially_filled = serializers.BooleanField(read_only=True)
-    trigger = serializers.CharField(read_only=True)
-    parameters = serializers.DictField(read_only=True)
+    values = serializers.ListField(child = ValueFormSerializer())   
+    filled = serializers.BooleanField(default=False)
+    partially_filled = serializers.BooleanField(default=False)
+    trigger = serializers.CharField(required=False)
+    parameters = serializers.DictField(required=False)
 
-    
-    def validate_finite_values_entity(values: List[Dict], supported_values: List[str] = None, invalid_trigger: str = None, key: str = None,
-    support_multiple: bool = True, pick_first: bool = False, **kwargs) -> SlotValidationResult:
+    def validate_finite_values_entity(values: List[Dict], supported_values: List[str] = None, invalid_trigger: str = None, key: str = None, support_multiple: bool = True, pick_first: bool = False, **kwargs) -> SlotValidationResult:
 
         # logic for when no data in value
-        if len(values)==0:
+        if len(values) == 0:
             filled = False
             partially_filled = False
 
@@ -94,8 +93,14 @@ class finiteSerializer(serializers.Serializer):
         else:
             parameters = {}
 
-        return SlotValidationResult[filled,partially_filled,trigger,parameters]
-        
+        results = {
+            "filled": filled,
+            "partially_filled": partially_filled,
+            "trigger": trigger,
+            "parameters": parameters
+        }
+        SlotValidationResult(results)
+
 
 
 
