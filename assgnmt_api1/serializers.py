@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 from typing import List, Dict, Callable, Tuple
 
@@ -20,7 +21,11 @@ class finiteSerializer(serializers.Serializer):
     supported_values = serializers.ListField(required=True)
     type = serializers.ListField(required=True)
     validation_parser = serializers.CharField()
-    values = serializers.ListField(child = valueFormSerializer())           
+    values = serializers.ListField(child = valueFormSerializer())   
+    filled = serializers.BooleanField(read_only=True)
+    partially_filled = serializers.BooleanField(read_only=True)
+    trigger = serializers.CharField(read_only=True)
+    parameters = serializers.DictField(read_only=True)
 
     
     def validate_finite_values_entity(values: List[Dict], supported_values: List[str] = None, invalid_trigger: str = None, key: str = None,
@@ -61,7 +66,7 @@ class finiteSerializer(serializers.Serializer):
             else:
                 filled = False
                 break
-    
+
         # logic for partially filled
         for j in value_of_key:
             if filled == True:
@@ -74,11 +79,13 @@ class finiteSerializer(serializers.Serializer):
                 else:
                     partially_filled = False
 
+
         # logic for trigger:
         if filled == True:
             trigger = ""
         else:
             trigger = 'invalid_ids_stated'
+
 
         # logic for parameters
         if len(par)!=0:
@@ -86,8 +93,9 @@ class finiteSerializer(serializers.Serializer):
             parameters[extra] = par
         else:
             parameters = {}
-    
-        return SlotValidationResult (filled,partially_filled,trigger,parameters)
+
+        return SlotValidationResult[filled,partially_filled,trigger,parameters]
+        
 
 
 
